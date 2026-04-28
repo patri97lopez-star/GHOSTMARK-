@@ -48,7 +48,7 @@ service cloud.firestore {
         incoming().updatedAt == request.time && (
           incoming().diff(existing()).affectedKeys().hasOnly([
             'status', 'updatedAt', 'validatedBy', 'companyName', 'contactEmail', 
-            'linkedInUrl', 'sentimentScore', 'opportunityLoss', 'sector', 
+            'linkedInUrl', 'sentimentScore', 'opportunityLoss', 'sector', 'campaignSegment',
             'visualHookUrl', 'proposal', 'keyMoment', 'targetProduct', 'newsletter',
             'videoUrl', 'videoScript', 'competitorAnalysis', 'socialStrategy', 
             'seoAnalysis', 'sentimentAnalysis'

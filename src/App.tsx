@@ -9,6 +9,7 @@ import { motion } from 'motion/react';
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasEntered, setHasEntered] = useState(false);
 
   // Simple routing for the Public Portal
   const urlParams = new URLSearchParams(window.location.search);
@@ -32,7 +33,7 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="h-screen bg-[#141414] flex flex-col items-center justify-center text-white font-mono uppercase tracking-[0.2em] text-[10px]">
+      <div className="h-screen bg-[#F5F5F0] flex flex-col items-center justify-center text-[#141414] font-mono uppercase tracking-[0.2em] text-[10px]">
         <Loader2 className="w-8 h-8 animate-spin mb-4" />
         Initializing Ghost Protocol
       </div>
@@ -43,7 +44,64 @@ export default function App() {
     return <PublicPortal prospectId={portalLeadId} />;
   }
 
-  return <Dashboard />;
+  if (!hasEntered && !user) {
+    return (
+      <div className="min-h-screen bg-[#F5F5F0] text-[#141414] flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        {/* Abstract Background Accents */}
+        <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[60%] bg-[#E5E5E0] rounded-full blur-[120px] opacity-50"></div>
+        <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[60%] bg-[#E5E5E0] rounded-full blur-[120px] opacity-50"></div>
+        
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-xl w-full text-center z-10"
+        >
+          <div className="inline-flex items-center gap-3 mb-8 px-4 py-2 rounded-full border border-[#E5E5E0] bg-white shadow-sm">
+            <Ghost className="w-5 h-5 text-[#141414]" />
+            <span className="text-[10px] font-mono tracking-widest uppercase text-[#8E9299]">Automatización de Marketing Sigiloso</span>
+          </div>
+          
+          <h1 className="text-6xl md:text-8xl font-serif italic mb-8 leading-[0.9] text-[#141414]">
+            GhostMark <span className="text-[#8E9299]">AI</span>
+          </h1>
+          
+          <p className="text-[#8E9299] text-xl mb-12 max-w-md mx-auto leading-relaxed">
+            Enriquecimiento automático, ganchos visuales y despliegue de secuencias personalizadas para leads de alto valor.
+          </p>
+
+          <div className="flex items-center justify-center">
+            <button
+              onClick={() => setHasEntered(true)}
+              className="group relative inline-flex items-center justify-center gap-3 px-12 py-5 bg-[#141414] text-white rounded-2xl font-bold text-lg hover:bg-black transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 w-full sm:w-auto min-w-[240px]"
+            >
+              Start
+              <div className="absolute -inset-1 rounded-2xl bg-[#141414]/20 blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            </button>
+          </div>
+          
+          <div className="mt-12 flex items-center justify-center gap-8 opacity-40">
+             <div className="flex items-center gap-1">
+                <Sparkles className="w-4 h-4 text-[#8E9299]" />
+                <span className="text-[10px] uppercase font-mono tracking-tighter text-[#8E9299]">Integración Gemini Pro</span>
+             </div>
+             <div className="flex items-center gap-1">
+                <Shield className="w-4 h-4 text-[#8E9299]" />
+                <span className="text-[10px] uppercase font-mono tracking-tighter text-[#8E9299]">Capa de Auditoría Humana</span>
+             </div>
+          </div>
+        </motion.div>
+        
+        <div className="absolute bottom-10 left-10 text-[10px] font-mono text-[#8E9299] uppercase tracking-widest">
+           Estado del Sistema: [Operativo]
+        </div>
+        <div className="absolute bottom-10 right-10 text-[10px] font-mono text-[#8E9299] uppercase tracking-widest">
+           Versión 1.0.5 - Alpha
+        </div>
+      </div>
+    );
+  }
+
+  return <Dashboard onBack={() => setHasEntered(false)} />;
 }
 
 function Shield(props: any) {

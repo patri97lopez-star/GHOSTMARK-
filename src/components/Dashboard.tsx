@@ -7,7 +7,7 @@ import ProspectCard from './ProspectCard';
 import { Search, Plus, Loader2, Target, BarChart3, TrendingUp, Users, ArrowLeft, Sparkles, X, Mail, Phone, ExternalLink, Info, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-export default function Dashboard() {
+export default function Dashboard({ onBack }: { onBack: () => void }) {
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [loading, setLoading] = useState(true);
   const [newUrl, setNewUrl] = useState('');
@@ -141,6 +141,13 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
+              <button
+                onClick={onBack}
+                className="mr-2 p-2 rounded-full hover:bg-[#F5F5F0] transition-colors"
+                title="Volver al inicio"
+              >
+                <ArrowLeft className="w-5 h-5 text-[#8E9299]" />
+              </button>
               {activeTab !== 'leads' && (
                 <button 
                   onClick={() => setActiveTab('leads')}
