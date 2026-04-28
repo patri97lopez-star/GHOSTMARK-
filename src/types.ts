@@ -7,6 +7,7 @@ export interface Prospect {
   sentimentScore?: number;
   opportunityLoss?: number;
   sector?: string;
+  campaignSegment?: string;
   status: 'pending' | 'enriched' | 'analyzed' | 'validated' | 'sent' | 'rejected';
   visualHookUrl?: string;
   videoUrl?: string;

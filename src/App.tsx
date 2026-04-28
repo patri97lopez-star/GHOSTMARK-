@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { auth, googleProvider, signInWithPopup } from './firebase';
+import { auth, googleProvider, signInWithPopup, signInAnonymously } from './firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import Dashboard from './components/Dashboard';
 import PublicPortal from './components/PublicPortal';
@@ -41,62 +41,6 @@ export default function App() {
 
   if (portalLeadId) {
     return <PublicPortal prospectId={portalLeadId} />;
-  }
-
-  if (!user) {
-    return (
-      <div className="h-screen bg-[#141414] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
-        {/* Abstract Background Accents */}
-        <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[60%] bg-[#FF4444] rounded-full blur-[120px] opacity-10"></div>
-        <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[60%] bg-[#00FF00] rounded-full blur-[120px] opacity-10"></div>
-        
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-xl w-full text-center z-10"
-        >
-          <div className="inline-flex items-center gap-3 mb-8 px-4 py-2 rounded-full border border-white/10 bg-white/5">
-            <Ghost className="w-5 h-5" />
-            <span className="text-[10px] font-mono tracking-widest uppercase">Automatización de Marketing Sigiloso</span>
-          </div>
-          
-          <h1 className="text-6xl md:text-8xl font-serif italic mb-8 leading-[0.9]">
-            GhostMark <span className="text-[#8E9299]">AI</span>
-          </h1>
-          
-          <p className="text-[#8E9299] text-xl mb-12 max-w-md mx-auto leading-relaxed">
-            Enriquecimiento automático, ganchos visuales y despliegue de secuencias personalizadas para leads de alto valor.
-          </p>
-
-          <button
-            onClick={handleLogin}
-            className="group relative inline-flex items-center gap-3 px-12 py-5 bg-white text-black rounded-2xl font-bold text-lg hover:bg-[#F5F5F0] transition-all"
-          >
-            <LogIn className="w-5 h-5" />
-            Iniciar sesión con Google
-            <div className="absolute -inset-1 rounded-2xl bg-white/20 blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          </button>
-          
-          <div className="mt-12 flex items-center justify-center gap-8 grayscale opacity-40">
-             <div className="flex items-center gap-1">
-                <Sparkles className="w-4 h-4" />
-                <span className="text-[10px] uppercase font-mono tracking-tighter">Integración Gemini Pro</span>
-             </div>
-             <div className="flex items-center gap-1">
-                <Shield className="w-4 h-4" />
-                <span className="text-[10px] uppercase font-mono tracking-tighter">Capa de Auditoría Humana</span>
-             </div>
-          </div>
-        </motion.div>
-        
-        <div className="absolute bottom-10 left-10 text-[10px] font-mono text-[#8E9299] uppercase tracking-widest">
-           Estado del Sistema: [Operativo]
-        </div>
-        <div className="absolute bottom-10 right-10 text-[10px] font-mono text-[#8E9299] uppercase tracking-widest">
-           Versión 1.0.4 - Alpha
-        </div>
-      </div>
-    );
   }
 
   return <Dashboard />;

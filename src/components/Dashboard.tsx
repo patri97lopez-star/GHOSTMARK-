@@ -35,11 +35,10 @@ export default function Dashboard() {
   };
 
   const handleAddScrapedProspect = async (url: string) => {
-     if (!auth.currentUser) return;
      try {
        await addDoc(collection(db, 'prospects'), {
          url,
-         ownerId: auth.currentUser.uid,
+         ownerId: auth.currentUser?.uid || 'demo-user',
          status: 'pending',
          createdAt: serverTimestamp(),
          updatedAt: serverTimestamp(),
@@ -57,10 +56,8 @@ export default function Dashboard() {
   });
 
   useEffect(() => {
-    if (!auth.currentUser) return;
-
     // Load settings
-    const settingsRef = doc(db, 'userSettings', auth.currentUser.uid);
+    const settingsRef = doc(db, 'userSettings', auth.currentUser?.uid || 'demo-user');
     const unsubSettings = onSnapshot(settingsRef, (doc) => {
       if (doc.exists()) {
         setSettings(doc.data() as any);
@@ -71,7 +68,7 @@ export default function Dashboard() {
 
     const q = query(
       collection(db, 'prospects'),
-      where('ownerId', '==', auth.currentUser.uid),
+      where('ownerId', '==', auth.currentUser?.uid || 'demo-user'),
       orderBy('createdAt', 'desc')
     );
 
@@ -91,13 +88,13 @@ export default function Dashboard() {
 
   const handleAddProspect = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newUrl || !auth.currentUser) return;
+    if (!newUrl) return;
 
     setIsSubmitting(true);
     try {
       const docRef = await addDoc(collection(db, 'prospects'), {
         url: newUrl,
-        ownerId: auth.currentUser.uid,
+        ownerId: auth.currentUser?.uid || 'demo-user',
         status: 'pending',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -190,12 +187,6 @@ export default function Dashboard() {
               <span className="text-[10px] uppercase tracking-widest text-[#8E9299] flex items-center gap-1 group-hover:text-[#141414] transition-colors"><Download className="w-3 h-3"/> Pérdida de Oportunidad</span>
               <span className="text-lg font-mono font-medium text-[#FF4444] group-hover:text-red-500 transition-colors">${totalOpportunityLoss.toLocaleString()}</span>
             </div>
-            <button 
-              onClick={() => auth.signOut()}
-              className="px-4 py-2 bg-[#F5F5F0] text-[#141414] rounded-lg text-xs font-medium hover:bg-white border border-[#E5E5E0] transition-all"
-            >
-              Cerrar Sesión
-            </button>
           </div>
         </div>
       </div>
@@ -519,10 +510,62 @@ export default function Dashboard() {
         )}
 
         {activeTab === 'campaigns' && (
-          <div className="bg-white rounded-3xl p-12 border border-[#E5E5E0] text-center">
-            <Users className="w-12 h-12 text-[#E5E5E0] mx-auto mb-4" />
-            <h3 className="text-xl font-medium mb-2">Segmentos de Campaña</h3>
-            <p className="text-[#8E9299] max-w-sm mx-auto">Organiza tus leads por sector y momentos clave. Las campañas se generan automáticamente a partir de tus prospectos validados.</p>
+          <div className="space-y-6">
+            <h2 className="text-2xl font-semibold mb-6">Segmentos de Campaña</h2>
+            {prospects.filter(p => p.campaignSegment).length === 0 ? (
+              <div className="bg-white rounded-3xl p-12 border border-[#E5E5E0] text-center">
+                <Users className="w-12 h-12 text-[#E5E5E0] mx-auto mb-4" />
+                <h3 className="text-xl font-medium mb-2">Segmentos de Campaña</h3>
+                <p className="text-[#8E9299] max-w-sm mx-auto">Tus leads se organizarán automáticamente por segmento cuando insertes un prospecto y se analice.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from(new Set(prospects.filter(p => p.campaignSegment).map(p => p.campaignSegment))).map((segment, idx) => {
+                  const segmentProspects = prospects.filter(p => p.campaignSegment === segment);
+                  const totalLoss = segmentProspects.reduce((sum, p) => sum + (p.opportunityLoss || 0), 0);
+                  
+                  return (
+                    <motion.div 
+                      key={idx}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-white rounded-2xl p-6 border border-[#E5E5E0] flex flex-col h-full hover:shadow-lg transition-all"
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <Target className="w-5 h-5 text-[#8E9299]" />
+                          <h3 className="font-semibold text-[#141414]">{segment}</h3>
+                        </div>
+                        <span className="text-xs font-medium px-2.5 py-1 bg-[#F5F5F0] text-[#8E9299] rounded-full">
+                          {segmentProspects.length} leads
+                        </span>
+                      </div>
+                      
+                      <div className="space-y-3 mb-6 flex-grow">
+                        {segmentProspects.slice(0, 3).map(p => (
+                          <div key={p.id} className="text-sm border-b border-[#E5E5E0] pb-2 last:border-0 last:pb-0">
+                            <span className="font-medium">{p.companyName || p.url}</span>
+                            {p.opportunityLoss ? (
+                              <span className="block text-xs text-[#FF4444]">+${p.opportunityLoss.toLocaleString()}</span>
+                            ) : null}
+                          </div>
+                        ))}
+                        {segmentProspects.length > 3 && (
+                          <div className="text-xs text-[#8E9299] pt-2">
+                            + {segmentProspects.length - 3} leads adicionales
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="pt-4 border-t border-[#E5E5E0] flex items-center justify-between">
+                        <div className="text-xs text-[#8E9299]">Valor del Segmento</div>
+                        <div className="text-sm font-mono font-bold text-[#FF4444]">${totalLoss.toLocaleString()}</div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
@@ -545,8 +588,7 @@ export default function Dashboard() {
                 />
                 <button 
                   onClick={async () => {
-                    if (!auth.currentUser) return;
-                    await setDoc(doc(db, 'userSettings', auth.currentUser.uid), settings, { merge: true });
+                    await setDoc(doc(db, 'userSettings', auth.currentUser?.uid || 'demo-user'), settings, { merge: true });
                     alert('Integración guardada!');
                   }}
                   className="w-full py-3 bg-[#141414] text-white rounded-lg text-sm font-medium"
@@ -760,8 +802,7 @@ export default function Dashboard() {
               </div>
               <button 
                 onClick={async () => {
-                  if (!auth.currentUser) return;
-                  await setDoc(doc(db, 'userSettings', auth.currentUser.uid), settings, { merge: true });
+                  await setDoc(doc(db, 'userSettings', auth.currentUser?.uid || 'demo-user'), settings, { merge: true });
                   alert('Ajustes sincronizados en todo el Protocolo Ghost.');
                 }}
                 className="w-full py-4 bg-[#141414] text-white rounded-xl font-bold hover:shadow-xl transition-all"

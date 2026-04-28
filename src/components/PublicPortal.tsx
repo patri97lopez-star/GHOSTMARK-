@@ -43,19 +43,17 @@ export default function PublicPortal({ prospectId }: { prospectId: string }) {
       <header className="bg-white border-b border-[#E5E5E0] px-6 py-4">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
            <div className="flex items-center gap-4">
-             {auth.currentUser && (
-               <button 
-                 onClick={() => {
-                   const url = new URL(window.location.href);
-                   url.searchParams.delete('lead');
-                   window.location.href = url.pathname;
-                 }}
-                 className="p-2 -ml-2 rounded-full hover:bg-[#F5F5F0] transition-colors"
-                 title="Volver al Dashboard"
-               >
-                 <ArrowLeft className="w-5 h-5 text-[#8E9299]" />
-               </button>
-             )}
+             <button 
+               onClick={() => {
+                 const url = new URL(window.location.href);
+                 url.searchParams.delete('lead');
+                 window.location.href = url.pathname;
+               }}
+               className="p-2 -ml-2 rounded-full hover:bg-[#F5F5F0] transition-colors"
+               title="Volver al Dashboard"
+             >
+               <ArrowLeft className="w-5 h-5 text-[#8E9299]" />
+             </button>
              <div className="flex items-center gap-2">
                <Target className="w-6 h-6 text-[#141414]" />
                <span className="font-medium">Portal de Optimización de Crecimiento</span>

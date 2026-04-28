@@ -7,12 +7,13 @@ service cloud.firestore {
     }
 
     // 3. Primitives
-    function isSignedIn() { return request.auth != null; }
+    function getUid() { return request.auth != null ? request.auth.uid : 'demo-user'; }
+    function isSignedIn() { return true; /* DEMO MODE: allow unauthenticated */ }
     function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
     function incoming() { return request.resource.data; }
     function existing() { return resource.data; }
-    function isOwner(data) { return isSignedIn() && data.ownerId == request.auth.uid; }
-    function isAdmin() { return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true; }
+    function isOwner(data) { return data.ownerId == getUid(); }
+    function isAdmin() { return request.auth != null && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true; }
 
     // Validation Helpers
     function isValidProspect(data) {
@@ -24,18 +25,18 @@ service cloud.firestore {
 
     // 1. Users
     match /users/{userId} {
-      allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
-      allow create: if isSignedIn() && request.auth.uid == userId && incoming().isAdmin == false;
-      allow update: if isSignedIn() && request.auth.uid == userId && incoming().isAdmin == existing().isAdmin;
+      allow get: if isSignedIn() && (getUid() == userId || isAdmin());
+      allow create: if isSignedIn() && getUid() == userId && incoming().isAdmin == false;
+      allow update: if isSignedIn() && getUid() == userId && incoming().isAdmin == existing().isAdmin;
     }
 
     // 2. Prospects
     match /prospects/{prospectId} {
-      allow list: if isSignedIn() && (resource.data.ownerId == request.auth.uid || isAdmin());
-      allow get: if isSignedIn() && (resource.data.ownerId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (resource.data.ownerId == getUid() || isAdmin());
+      allow get: if isSignedIn() && (resource.data.ownerId == getUid() || isAdmin());
       
       allow create: if isSignedIn() && isValidId(prospectId) && isValidProspect(incoming()) && 
-                    incoming().ownerId == request.auth.uid && incoming().createdAt == request.time;
+                    incoming().ownerId == getUid() && incoming().createdAt == request.time;
       
       allow update: if isSignedIn() && isValidProspect(incoming()) && (
         (isOwner(existing()) && incoming().ownerId == existing().ownerId) || isAdmin()
@@ -55,19 +56,19 @@ service cloud.firestore {
         )
       );
 
-      allow delete: if isSignedIn() && (resource.data.ownerId == request.auth.uid || isAdmin());
+      allow delete: if isSignedIn() && (resource.data.ownerId == getUid() || isAdmin());
     }
 
     // 3. Campaigns
     match /campaigns/{campaignId} {
-      allow read: if isSignedIn() && (resource.data.ownerId == request.auth.uid || isAdmin());
-      allow create: if isSignedIn() && incoming().ownerId == request.auth.uid;
-      allow update: if isSignedIn() && existing().ownerId == request.auth.uid && incoming().ownerId == request.auth.uid;
+      allow read: if isSignedIn() && (resource.data.ownerId == getUid() || isAdmin());
+      allow create: if isSignedIn() && incoming().ownerId == getUid();
+      allow update: if isSignedIn() && existing().ownerId == getUid() && incoming().ownerId == getUid();
     }
 
     // 4. User Settings
     match /userSettings/{userId} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      allow read, write: if isSignedIn() && getUid() == userId;
     }
   }
 }

@@ -11,7 +11,8 @@ export interface EnrichmentResult {
   sector: string;
   proposal: string;
   keyMoment: string;
-  targetProduct: 'Logo' | 'Newsletter' | 'Web Design' | 'CEO Branding';
+  targetProduct: 'Ideas de Market / Eslogan / Logo' | 'Follet (Folleto) / Newsletter o Mailing' | 'RRSS (Redes Sociales) / Banner';
+  campaignSegment: string;
 }
 
 export async function analyzeProspect(url: string, content: string): Promise<EnrichmentResult> {
@@ -27,6 +28,7 @@ export async function analyzeProspect(url: string, content: string): Promise<Enr
     - sector: string
     - proposal: string (propuesta de marketing personalizada, en español)
     - keyMoment: string (una razón corta y atractiva de por qué AHORA es el momento de contactar, ej: "Rebranding reciente", "Mala experiencia móvil", "Alto volumen de reseñas negativas", en español)
+    - campaignSegment: string (Segmento de campaña al que pertenece, ej: "B2B SaaS Tech", "Clínicas Dentales Premium", "E-commerce Moda", etc.)
     - targetProduct: string (elige estrictamente una de estas opciones basándote en lo que más necesita el cliente: 
         "Ideas de Market / Eslogan / Logo" si necesita identidad o ideas de mercado, 
         "Follet (Folleto) / Newsletter o Mailing" si necesita material informativo o retención, 
@@ -44,6 +46,7 @@ export async function analyzeProspect(url: string, content: string): Promise<Enr
           sector: { type: Type.STRING },
           proposal: { type: Type.STRING },
           keyMoment: { type: Type.STRING },
+          campaignSegment: { type: Type.STRING },
           targetProduct: { 
             type: Type.STRING, 
             enum: [
@@ -53,7 +56,7 @@ export async function analyzeProspect(url: string, content: string): Promise<Enr
             ] 
           },
         },
-        required: ["companyName", "contactEmail", "opportunityLoss", "keyMoment", "targetProduct"]
+        required: ["companyName", "contactEmail", "opportunityLoss", "keyMoment", "campaignSegment", "targetProduct"]
       }
     }
   });
