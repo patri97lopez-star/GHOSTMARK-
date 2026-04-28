@@ -1,0 +1,73 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 3. Primitives
+    function isSignedIn() { return request.auth != null; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isOwner(data) { return isSignedIn() && data.ownerId == request.auth.uid; }
+    function isAdmin() { return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true; }
+
+    // Validation Helpers
+    function isValidProspect(data) {
+      return data.url is string && data.url.size() < 2048 &&
+             data.status in ['pending', 'enriched', 'analyzed', 'validated', 'sent', 'rejected'] &&
+             isValidId(data.ownerId) &&
+             (!('opportunityLoss' in data) || data.opportunityLoss >= 0);
+    }
+
+    // 1. Users
+    match /users/{userId} {
+      allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow create: if isSignedIn() && request.auth.uid == userId && incoming().isAdmin == false;
+      allow update: if isSignedIn() && request.auth.uid == userId && incoming().isAdmin == existing().isAdmin;
+    }
+
+    // 2. Prospects
+    match /prospects/{prospectId} {
+      allow list: if isSignedIn() && (resource.data.ownerId == request.auth.uid || isAdmin());
+      allow get: if isSignedIn() && (resource.data.ownerId == request.auth.uid || isAdmin());
+      
+      allow create: if isSignedIn() && isValidId(prospectId) && isValidProspect(incoming()) && 
+                    incoming().ownerId == request.auth.uid && incoming().createdAt == request.time;
+      
+      allow update: if isSignedIn() && isValidProspect(incoming()) && (
+        (isOwner(existing()) && incoming().ownerId == existing().ownerId) || isAdmin()
+      ) && (
+        // Terminal state lock
+        existing().status != 'sent' || isAdmin()
+      ) && (
+        // Action-based updates
+        incoming().updatedAt == request.time && (
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'status', 'updatedAt', 'validatedBy', 'companyName', 'contactEmail', 
+            'linkedInUrl', 'sentimentScore', 'opportunityLoss', 'sector', 
+            'visualHookUrl', 'proposal', 'keyMoment', 'targetProduct', 'newsletter',
+            'videoUrl', 'videoScript', 'competitorAnalysis', 'socialStrategy', 
+            'seoAnalysis', 'sentimentAnalysis'
+          ])
+        )
+      );
+
+      allow delete: if isSignedIn() && (resource.data.ownerId == request.auth.uid || isAdmin());
+    }
+
+    // 3. Campaigns
+    match /campaigns/{campaignId} {
+      allow read: if isSignedIn() && (resource.data.ownerId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && incoming().ownerId == request.auth.uid;
+      allow update: if isSignedIn() && existing().ownerId == request.auth.uid && incoming().ownerId == request.auth.uid;
+    }
+
+    // 4. User Settings
+    match /userSettings/{userId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+  }
+}

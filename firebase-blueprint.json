@@ -1,0 +1,138 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "System user (marketing manager)",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "isAdmin": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "isAdmin", "createdAt"]
+    },
+    "Prospect": {
+      "title": "Prospect",
+      "description": "Potential lead identified by URL",
+      "type": "object",
+      "properties": {
+        "url": { "type": "string", "format": "uri" },
+        "companyName": { "type": "string" },
+        "contactEmail": { "type": "string" },
+        "linkedInUrl": { "type": "string" },
+        "sentimentScore": { "type": "number" },
+        "opportunityLoss": { "type": "number" },
+        "sector": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "enriched", "analyzed", "validated", "sent", "rejected"] },
+        "visualHookUrl": { "type": "string" },
+        "videoUrl": { "type": "string" },
+        "videoScript": {
+          "type": "object",
+          "properties": {
+            "script": { "type": "string" },
+            "avatarInstructions": { "type": "string" }
+          }
+        },
+        "competitorAnalysis": {
+          "type": "object",
+          "properties": {
+            "competitors": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "weakness": { "type": "string" },
+                  "url": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "socialStrategy": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "platform": { "type": "string" },
+              "ideas": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "seoAnalysis": {
+          "type": "object",
+          "properties": {
+            "keywords": { "type": "array", "items": { "type": "string" } },
+            "metaDescription": { "type": "string" }
+          }
+        },
+        "sentimentAnalysis": {
+          "type": "object",
+          "properties": {
+            "score": { "type": "number" },
+            "label": { "type": "string" },
+            "summary": { "type": "string" }
+          }
+        },
+        "proposal": { "type": "string" },
+        "keyMoment": { "type": "string" },
+        "targetProduct": { "type": "string" },
+        "newsletter": {
+          "type": "object",
+          "properties": {
+            "subject": { "type": "string" },
+            "content": { "type": "string" },
+            "cta": { "type": "string" },
+            "productHighlight": { "type": "string" }
+          }
+        },
+        "validatedBy": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["url", "status", "ownerId", "createdAt"]
+    },
+    "Campaign": {
+      "title": "Campaign",
+      "description": "Marketing campaign group",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "prospectCount": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "ownerId", "createdAt"]
+    },
+    "UserSettings": {
+      "title": "UserSettings",
+      "description": "User specific configurations",
+      "type": "object",
+      "properties": {
+        "calendlyUrl": { "type": "string" },
+        "slackWebhook": { "type": "string" },
+        "whatsappNumber": { "type": "string" },
+        "brandVoice": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "User profiles and permissions"
+    },
+    "prospects/{prospectId}": {
+      "schema": "Prospect",
+      "description": "Individual leads and their AI-enriched data"
+    },
+    "campaigns/{campaignId}": {
+      "schema": "Campaign",
+      "description": "Collection of campaigns"
+    },
+    "userSettings/{userId}": {
+      "schema": "UserSettings",
+      "description": "User settings"
+    }
+  }
+}
